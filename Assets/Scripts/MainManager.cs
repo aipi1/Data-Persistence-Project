@@ -11,6 +11,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,7 +19,6 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
     // Start is called before the first frame update
     void Start()
     {
@@ -26,6 +26,15 @@ public class MainManager : MonoBehaviour
         int perLine = Mathf.FloorToInt(4.0f / step);
         
         int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        if (MenuManager.instance != null)
+        {
+            ScoreText.text = MenuManager.instance.GetName() + $"'s Score : {m_Points}";
+
+            MenuManager.instance.LoadBestScore();
+            BestScoreText.text = $"Best Score : {MenuManager.instance.GetBestName()}: {MenuManager.instance.GetBestScore()}";
+        }
+
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -65,12 +74,25 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        if (MenuManager.instance != null)
+        {
+            ScoreText.text = MenuManager.instance.GetName() + $"'s Score : {m_Points}";
+        } else
+        {
+            ScoreText.text = $"Score : {m_Points}";
+        }
     }
 
     public void GameOver()
     {
         m_GameOver = true;
+        if (MenuManager.instance != null && MenuManager.instance.GetBestScore() < m_Points)
+        {
+            MenuManager.instance.SetBestName(MenuManager.instance.GetName());
+            MenuManager.instance.SetBestScore(m_Points);
+            MenuManager.instance.SaveNewBestScore();
+            BestScoreText.text = $"Best Score : {MenuManager.instance.GetBestName()}: {MenuManager.instance.GetBestScore()}";
+        }
         GameOverText.SetActive(true);
     }
 }
